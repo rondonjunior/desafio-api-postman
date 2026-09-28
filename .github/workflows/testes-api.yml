@@ -1,0 +1,34 @@
+name: Testes de API - ServeRest
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  testes-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar o código do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar o Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar as dependências
+        run: npm ci
+
+      - name: Rodar os testes com Newman
+        run: npm test
+
+      - name: Publicar o relatório como artefato
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-testes-api
+          path: reports/
+          retention-days: 30

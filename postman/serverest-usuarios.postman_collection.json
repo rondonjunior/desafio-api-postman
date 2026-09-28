@@ -1,0 +1,1477 @@
+{
+  "info": {
+    "_postman_id": "8f77b55c-493a-4650-b0a2-04cb5cfeba41",
+    "name": "ServeRest - Usuários",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "49057646",
+    "_collection_link": "https://go.postman.co/collection/49057646-8f77b55c-493a-4650-b0a2-04cb5cfeba41?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "01 - Cadastrar Usuário (POST)",
+      "item": [
+        {
+          "name": "CT01 - Cadastrar usuário administrador com sucesso",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Gera dados novos a cada execução, para o email nunca se repetir\r",
+                  "const sufixo = Date.now();\r",
+                  "\r",
+                  "pm.collectionVariables.set(\"usuarioNome\", \"QA Automação \" + sufixo);\r",
+                  "pm.collectionVariables.set(\"usuarioEmail\", `qa_${sufixo}@teste.com`);\r",
+                  "pm.collectionVariables.set(\"usuarioSenha\", \"Senha@123\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "// Anota o id do usuário criado, para usar nas próximas pastas\r",
+                  "pm.collectionVariables.set(\"usuarioId\", resposta._id);\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 201 (Created)\", () => {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Mensagem deve ser 'Cadastro realizado com sucesso'\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Cadastro realizado com sucesso\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve retornar um _id com 16 caracteres\", () => {\r",
+                  "    pm.expect(resposta._id).to.be.a(\"string\").and.to.have.lengthOf(16);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Tempo de resposta deve ser menor que 2 segundos\", () => {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"{{usuarioNome}}\",\r\n  \"email\": \"{{usuarioEmail}}\",\r\n  \"password\": \"{{usuarioSenha}}\",\r\n  \"administrador\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT02 - Não deve cadastrar com email já utilizado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Mensagem deve informar que o email já está em uso\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Este email já está sendo usado\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Usuário Duplicado\",\r\n  \"email\": \"{{usuarioEmail}}\",\r\n  \"password\": \"Senha@123\",\r\n  \"administrador\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT03 - Não deve cadastrar sem o campo nome",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que o campo nome é obrigatório\", () => {\r",
+                  "    pm.expect(resposta.nome).to.eql(\"nome é obrigatório\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"sem.nome@teste.com\",\r\n  \"password\": \"Senha@123\",\r\n  \"administrador\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT04 - Não deve cadastrar sem o campo email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que o campo email é obrigatório\", () => {\r",
+                  "    pm.expect(resposta.email).to.eql(\"email é obrigatório\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Usuário Sem Email\",\r\n  \"password\": \"Senha@123\",\r\n  \"administrador\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT05 - Não deve cadastrar sem o campo password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que o campo password é obrigatório\", () => {\r",
+                  "    pm.expect(resposta.password).to.eql(\"password é obrigatório\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Usuário Sem Senha\",\r\n  \"email\": \"sem.senha@teste.com\",\r\n  \"administrador\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT06 - Não deve cadastrar sem o campo administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que o campo administrador é obrigatório\", () => {\r",
+                  "    pm.expect(resposta.administrador).to.eql(\"administrador é obrigatório\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Usuário Sem Perfil\",\r\n  \"email\": \"sem.perfil@teste.com\",\r\n  \"password\": \"Senha@123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT07 - Não deve cadastrar com email em formato inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que o email é inválido\", () => {\r",
+                  "    pm.expect(resposta.email).to.eql(\"email deve ser um email válido\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Usuário Email Inválido\",\r\n  \"email\": \"email-sem-arroba.com\",\r\n  \"password\": \"Senha@123\",\r\n  \"administrador\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Autenticação (Login JWT)",
+      "item": [
+        {
+          "name": "CT08 - Login com credenciais válidas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "// Anota o token para usar nas rotas protegidas\r",
+                  "pm.collectionVariables.set(\"token\", resposta.authorization);\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 200 (OK)\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Mensagem deve ser 'Login realizado com sucesso'\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Login realizado com sucesso\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Token deve estar no formato 'Bearer <jwt>'\", () => {\r",
+                  "    pm.expect(resposta.authorization).to.match(/^Bearer .+\\..+\\..+$/);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Token deve pertencer ao usuário que fez login\", () => {\r",
+                  "    // Pega o pedaço do meio do token (o conteúdo) e decodifica\r",
+                  "    const conteudo = resposta.authorization.replace(\"Bearer \", \"\").split(\".\")[1];\r",
+                  "    const dados = JSON.parse(atob(conteudo.replace(/-/g, \"+\").replace(/_/g, \"/\")));\r",
+                  "\r",
+                  "    pm.expect(dados.email).to.eql(pm.collectionVariables.get(\"usuarioEmail\"));\r",
+                  "    pm.expect(dados.exp).to.be.above(dados.iat); // validade maior que a criação\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"{{usuarioEmail}}\",\r\n  \"password\": \"{{usuarioSenha}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT09 - Não deve logar com senha incorreta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 401 (Unauthorized)\", () => {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Mensagem deve informar credenciais inválidas\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Email e/ou senha inválidos\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"{{usuarioEmail}}\",\r\n  \"password\": \"SenhaErrada999\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT10 - Não deve logar com email não cadastrado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 401 (Unauthorized)\", () => {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Mensagem deve informar credenciais inválidas\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Email e/ou senha inválidos\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"nao.cadastrado.{{$timestamp}}@teste.com\",\r\n  \"password\": \"Senha@123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT11 - Não deve logar sem email e senha",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que email e senha são obrigatórios\", () => {\r",
+                  "    pm.expect(resposta.email).to.eql(\"email é obrigatório\");\r",
+                  "    pm.expect(resposta.password).to.eql(\"password é obrigatório\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT12 - Deve acessar rota protegida com token válido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 201 (Created)\", () => {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Token válido deve permitir cadastrar produto\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Cadastro realizado com sucesso\");\r",
+                  "    pm.expect(resposta._id).to.be.a(\"string\").and.to.have.lengthOf(16);\r",
+                  "});\r",
+                  "\r",
+                  "// Limpeza: apaga o produto criado, para não deixar lixo na API\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.variables.get(\"baseUrl\") + \"/produtos/\" + resposta._id,\r",
+                  "    method: \"DELETE\",\r",
+                  "    header: { Authorization: pm.collectionVariables.get(\"token\") }\r",
+                  "}, (erro, respostaExclusao) => {\r",
+                  "    pm.test(\"Limpeza: produto de teste deve ser excluído\", () => {\r",
+                  "        pm.expect(respostaExclusao.code).to.eql(200);\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Produto QA {{$timestamp}}\",\r\n  \"preco\": 100,\r\n  \"descricao\": \"Produto criado pela automação\",\r\n  \"quantidade\": 10\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT13 - Não deve acessar rota protegida sem token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 401 (Unauthorized)\", () => {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que o token está ausente ou inválido\", () => {\r",
+                  "    pm.expect(resposta.message).to.include(\"Token de acesso ausente\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Produto QA {{$timestamp}}\",\r\n  \"preco\": 100,\r\n  \"descricao\": \"Produto criado pela automação\",\r\n  \"quantidade\": 10\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "produtos"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Listar Usuários (GET)",
+      "item": [
+        {
+          "name": "CT14 - Deve listar todos os usuários",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "// Contrato: o formato que a resposta TEM que ter\r",
+                  "const schema = {\r",
+                  "    type: \"object\",\r",
+                  "    required: [\"quantidade\", \"usuarios\"],\r",
+                  "    properties: {\r",
+                  "        quantidade: { type: \"integer\" },\r",
+                  "        usuarios: {\r",
+                  "            type: \"array\",\r",
+                  "            items: {\r",
+                  "                type: \"object\",\r",
+                  "                required: [\"nome\", \"email\", \"password\", \"administrador\", \"_id\"],\r",
+                  "                properties: {\r",
+                  "                    nome: { type: \"string\" },\r",
+                  "                    email: { type: \"string\" },\r",
+                  "                    password: { type: \"string\" },\r",
+                  "                    administrador: { type: \"string\" },\r",
+                  "                    _id: { type: \"string\" }\r",
+                  "                }\r",
+                  "            }\r",
+                  "        }\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 200 (OK)\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Resposta deve respeitar o contrato (schema)\", () => {\r",
+                  "    pm.response.to.have.jsonSchema(schema);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Campo 'quantidade' deve bater com o total da lista\", () => {\r",
+                  "    pm.expect(resposta.quantidade).to.eql(resposta.usuarios.length);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT15 - Deve filtrar usuário pelo email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 200 (OK)\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve encontrar exatamente 1 usuário\", () => {\r",
+                  "    pm.expect(resposta.quantidade).to.eql(1);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Usuário encontrado deve ser o que criamos no CT01\", () => {\r",
+                  "    const usuario = resposta.usuarios[0];\r",
+                  "    pm.expect(usuario.email).to.eql(pm.collectionVariables.get(\"usuarioEmail\"));\r",
+                  "    pm.expect(usuario.nome).to.eql(pm.collectionVariables.get(\"usuarioNome\"));\r",
+                  "    pm.expect(usuario._id).to.eql(pm.collectionVariables.get(\"usuarioId\"));\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios?email={{usuarioEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "{{usuarioEmail}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT16 - Deve retornar lista vazia para email inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 200 (OK)\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve retornar quantidade 0 e lista vazia\", () => {\r",
+                  "    pm.expect(resposta.quantidade).to.eql(0);\r",
+                  "    pm.expect(resposta.usuarios).to.be.an(\"array\").that.is.empty;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios?email=nao.existe.{{$timestamp}}@teste.com",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "nao.existe.{{$timestamp}}@teste.com"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 - Buscar Usuário por ID (GET)",
+      "item": [
+        {
+          "name": "CT17 - Deve buscar usuário pelo ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "const schema = {\r",
+                  "    type: \"object\",\r",
+                  "    required: [\"nome\", \"email\", \"password\", \"administrador\", \"_id\"],\r",
+                  "    properties: {\r",
+                  "        nome: { type: \"string\" },\r",
+                  "        email: { type: \"string\" },\r",
+                  "        password: { type: \"string\" },\r",
+                  "        administrador: { type: \"string\" },\r",
+                  "        _id: { type: \"string\" }\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 200 (OK)\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Resposta deve respeitar o contrato (schema)\", () => {\r",
+                  "    pm.response.to.have.jsonSchema(schema);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Dados devem ser exatamente os cadastrados no CT01\", () => {\r",
+                  "    pm.expect(resposta._id).to.eql(pm.collectionVariables.get(\"usuarioId\"));\r",
+                  "    pm.expect(resposta.nome).to.eql(pm.collectionVariables.get(\"usuarioNome\"));\r",
+                  "    pm.expect(resposta.email).to.eql(pm.collectionVariables.get(\"usuarioEmail\"));\r",
+                  "    pm.expect(resposta.password).to.eql(pm.collectionVariables.get(\"usuarioSenha\"));\r",
+                  "    pm.expect(resposta.administrador).to.eql(\"true\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT18 - Não deve encontrar usuário com ID inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que o usuário não foi encontrado\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Usuário não encontrado\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/idNaoExiste12345",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "idNaoExiste12345"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 - Atualizar Usuário (PUT)",
+      "item": [
+        {
+          "name": "CT19 - Deve atualizar os dados do usuário",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set(\"usuarioNomeAtualizado\", \"QA Atualizado \" + Date.now());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 200 (OK)\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Mensagem deve ser 'Registro alterado com sucesso'\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Registro alterado com sucesso\");\r",
+                  "});\r",
+                  "\r",
+                  "// Confere se a alteração foi mesmo gravada, buscando o usuário de novo\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.variables.get(\"baseUrl\") + \"/usuarios/\" + pm.collectionVariables.get(\"usuarioId\"),\r",
+                  "    method: \"GET\"\r",
+                  "}, (erro, respostaBusca) => {\r",
+                  "    pm.test(\"Nome deve estar atualizado ao consultar o usuário\", () => {\r",
+                  "        pm.expect(respostaBusca.json().nome).to.eql(pm.collectionVariables.get(\"usuarioNomeAtualizado\"));\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"{{usuarioNomeAtualizado}}\",\r\n  \"email\": \"{{usuarioEmail}}\",\r\n  \"password\": \"{{usuarioSenha}}\",\r\n  \"administrador\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT20 - Deve criar usuário ao atualizar ID inexistente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set(\"segundoUsuarioEmail\", `qa_put_${Date.now()}@teste.com`);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "// Anota o id do segundo usuário, para o CT21 e para a limpeza\r",
+                  "pm.collectionVariables.set(\"segundoUsuarioId\", resposta._id);\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 201 (Created)\", () => {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve cadastrar um novo usuário (comportamento upsert)\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Cadastro realizado com sucesso\");\r",
+                  "    pm.expect(resposta._id).to.be.a(\"string\").and.to.have.lengthOf(16);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Usuário Criado via PUT\",\r\n  \"email\": \"{{segundoUsuarioEmail}}\",\r\n  \"password\": \"Senha@123\",\r\n  \"administrador\": \"false\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/idNovo{{$timestamp}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "idNovo{{$timestamp}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT21 - Não deve atualizar para email já utilizado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que o email já está em uso\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Este email já está sendo usado\");\r",
+                  "});\r",
+                  "\r",
+                  "// Limpeza: apaga o segundo usuário criado no CT20\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.variables.get(\"baseUrl\") + \"/usuarios/\" + pm.collectionVariables.get(\"segundoUsuarioId\"),\r",
+                  "    method: \"DELETE\"\r",
+                  "}, (erro, respostaExclusao) => {\r",
+                  "    pm.test(\"Limpeza: segundo usuário deve ser excluído\", () => {\r",
+                  "        pm.expect(respostaExclusao.json().message).to.eql(\"Registro excluído com sucesso\");\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"{{usuarioNomeAtualizado}}\",\r\n  \"email\": \"{{segundoUsuarioEmail}}\",\r\n  \"password\": \"{{usuarioSenha}}\",\r\n  \"administrador\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT22 - Não deve atualizar sem campo obrigatório",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que o campo password é obrigatório\", () => {\r",
+                  "    pm.expect(resposta.password).to.eql(\"password é obrigatório\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"{{usuarioNomeAtualizado}}\",\r\n  \"email\": \"{{usuarioEmail}}\",\r\n  \"administrador\": \"true\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 - Excluir Usuário (DELETE)",
+      "item": [
+        {
+          "name": "CT23 - Deve informar que nenhum registro foi excluído para ID inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 200 (OK)\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve informar que nenhum registro foi excluído\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Nenhum registro excluído\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/idNaoExiste12345",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "idNaoExiste12345"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT24 - Não deve excluir usuário com carrinho cadastrado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const baseUrl = pm.variables.get(\"baseUrl\");\r",
+                  "const token = pm.collectionVariables.get(\"token\");\r",
+                  "\r",
+                  "// 1) Cria um produto\r",
+                  "pm.sendRequest({\r",
+                  "    url: baseUrl + \"/produtos\",\r",
+                  "    method: \"POST\",\r",
+                  "    header: { \"Content-Type\": \"application/json\", \"Authorization\": token },\r",
+                  "    body: {\r",
+                  "        mode: \"raw\",\r",
+                  "        raw: JSON.stringify({\r",
+                  "            nome: \"Produto Carrinho \" + Date.now(),\r",
+                  "            preco: 50,\r",
+                  "            descricao: \"Produto para teste de carrinho\",\r",
+                  "            quantidade: 5\r",
+                  "        })\r",
+                  "    }\r",
+                  "}, (erro, respostaProduto) => {\r",
+                  "    const idProduto = respostaProduto.json()._id;\r",
+                  "    pm.collectionVariables.set(\"produtoCarrinhoId\", idProduto);\r",
+                  "\r",
+                  "    // 2) Coloca o produto no carrinho do usuário\r",
+                  "    pm.sendRequest({\r",
+                  "        url: baseUrl + \"/carrinhos\",\r",
+                  "        method: \"POST\",\r",
+                  "        header: { \"Content-Type\": \"application/json\", \"Authorization\": token },\r",
+                  "        body: {\r",
+                  "            mode: \"raw\",\r",
+                  "            raw: JSON.stringify({ produtos: [{ idProduto: idProduto, quantidade: 1 }] })\r",
+                  "        }\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "const baseUrl = pm.variables.get(\"baseUrl\");\r",
+                  "const token = pm.collectionVariables.get(\"token\");\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 400 (Bad Request)\", () => {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deve bloquear exclusão de usuário com carrinho\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Não é permitido excluir usuário com carrinho cadastrado\");\r",
+                  "    pm.expect(resposta.idCarrinho).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "// Limpeza 1: cancela o carrinho\r",
+                  "pm.sendRequest({\r",
+                  "    url: baseUrl + \"/carrinhos/cancelar-compra\",\r",
+                  "    method: \"DELETE\",\r",
+                  "    header: { \"Authorization\": token }\r",
+                  "}, (erro, respostaCarrinho) => {\r",
+                  "    pm.test(\"Limpeza: carrinho deve ser cancelado\", () => {\r",
+                  "        pm.expect(respostaCarrinho.code).to.eql(200);\r",
+                  "    });\r",
+                  "\r",
+                  "    // Limpeza 2: exclui o produto (só depois que o carrinho foi cancelado)\r",
+                  "    pm.sendRequest({\r",
+                  "        url: baseUrl + \"/produtos/\" + pm.collectionVariables.get(\"produtoCarrinhoId\"),\r",
+                  "        method: \"DELETE\",\r",
+                  "        header: { \"Authorization\": token }\r",
+                  "    }, (erro, respostaProduto) => {\r",
+                  "        pm.test(\"Limpeza: produto deve ser excluído\", () => {\r",
+                  "            pm.expect(respostaProduto.code).to.eql(200);\r",
+                  "        });\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CT25 - Deve excluir o usuário com sucesso",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const resposta = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code deve ser 200 (OK)\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Mensagem deve ser 'Registro excluído com sucesso'\", () => {\r",
+                  "    pm.expect(resposta.message).to.eql(\"Registro excluído com sucesso\");\r",
+                  "});\r",
+                  "\r",
+                  "// Confere se o usuário sumiu de verdade, buscando ele de novo\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.variables.get(\"baseUrl\") + \"/usuarios/\" + pm.collectionVariables.get(\"usuarioId\"),\r",
+                  "    method: \"GET\"\r",
+                  "}, (erro, respostaBusca) => {\r",
+                  "    pm.test(\"Usuário não deve mais ser encontrado após a exclusão\", () => {\r",
+                  "        pm.expect(respostaBusca.code).to.eql(400);\r",
+                  "        pm.expect(respostaBusca.json().message).to.eql(\"Usuário não encontrado\");\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "usuarioNome",
+      "value": ""
+    },
+    {
+      "key": "usuarioEmail",
+      "value": ""
+    },
+    {
+      "key": "usuarioSenha",
+      "value": ""
+    },
+    {
+      "key": "usuarioId",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "usuarioNomeAtualizado",
+      "value": ""
+    },
+    {
+      "key": "segundoUsuarioEmail",
+      "value": ""
+    },
+    {
+      "key": "segundoUsuarioId",
+      "value": ""
+    },
+    {
+      "key": "produtoCarrinhoId",
+      "value": ""
+    }
+  ]
+}

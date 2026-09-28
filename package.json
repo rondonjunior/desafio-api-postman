@@ -1,0 +1,15 @@
+{
+  "name": "desafio-api-postman",
+  "version": "1.0.0",
+  "description": "Testes automatizados da API de usuários do ServeRest com Postman e Newman",
+  "scripts": {
+    "test": "newman run postman/serverest-usuarios.postman_collection.json -e postman/serverest.postman_environment.json -r cli,htmlextra --reporter-htmlextra-export reports/relatorio-api.html --reporter-htmlextra-title \"Relatório de Testes - API ServeRest\""
+  },
+  "author": "Rondon Júnior",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "newman": "^6.2.2",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}
